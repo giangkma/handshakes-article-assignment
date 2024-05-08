@@ -1,3 +1,10 @@
+DEMO: https://handshakes-article-assignment.web.app/
+
+Steps to setup and run project on local:
+1. clone the repo
+2. run: yarn install or npm install
+3. run: yarn dev
+
 News-Article
 Take-home assignment for front-end developer.
 
