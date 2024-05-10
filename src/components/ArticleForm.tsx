@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { IArticle, ICreateArticle } from "../models/article";
 import { createArticleAPI, updateArticleAPI } from "../services/articles";
@@ -12,7 +12,7 @@ interface IProps {
   article?: IArticle;
 }
 
-export const ArticleForm = ({ article }: IProps) => {
+export const ArticleForm = memo(({ article }: IProps) => {
   const isEdit = !!article;
 
   const [loading, setLoading] = useState(false);
@@ -101,4 +101,4 @@ export const ArticleForm = ({ article }: IProps) => {
       </div>
     </>
   );
-};
+});

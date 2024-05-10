@@ -1,33 +1,13 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { ArticleForm } from "../components/ArticleForm";
-import { useEffect, useState } from "react";
-import { IArticle } from "../models/article";
-import { getArticleAPI } from "../services/articles";
 import { Loading } from "../components/Loading";
+import { useArticleDetail } from "../hooks/useArticleDetail";
 
 export const EditArticle = () => {
-  const [loading, setLoading] = useState(false);
-  const [article, setArticle] = useState<IArticle | undefined>(undefined);
-
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const getArticleDetail = async () => {
-    try {
-      if (!id) return;
-      setLoading(true);
-      const { data } = await getArticleAPI(id);
-      setArticle(data);
-    } catch (error) {
-      console.log("error :>> ", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getArticleDetail();
-  }, [id]);
+  const { loading, article } = useArticleDetail(id);
 
   const onGoBack = () => {
     navigate(-1);

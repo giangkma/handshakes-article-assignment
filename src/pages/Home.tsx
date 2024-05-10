@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroller";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -7,101 +7,11 @@ import { LoadMoreSpiner } from "../components/LoadMoreSpiner";
 import { Loading } from "../components/Loading";
 import { ModalArticleDelete } from "../components/ModalArticleDelete";
 import { InputText } from "../components/form/InputText";
-import { useDebounce } from "../hooks";
+import { useArticlesList } from "../hooks/useArticlesList";
 import { IArticle } from "../models/article";
-import {
-  getListArticlesAction,
-  selectArticlesFromStore,
-} from "../redux/article";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { deleteArticleAPI } from "../services/articles";
 import { formatNumber } from "../ultils";
-
-const LIMIT = 10;
-
-const useGetArticlesHook = () => {
-  const dispatch = useAppDispatch();
-  const articlesState = useAppSelector(selectArticlesFromStore);
-
-  const [loading, setLoading] = useState(false);
-  const [articles, setArticles] = useState<IArticle[]>([]);
-  const [isHasMore, setIsHasMore] = useState(true);
-  const [searchValue, setSearchValue] = useState<string>("");
-  const [total, setTotal] = useState(0);
-
-  const currentPage = useRef(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const searchValueDebounce = useDebounce(searchValue, 500);
-
-  // get all article or filter by search value to store in FE side
-  const getData = async () => {
-    try {
-      setLoading(true);
-      currentPage.current = 0;
-      const list = await getListArticlesAction(dispatch, searchValueDebounce);
-      await onSplitData({
-        isReset: true,
-        dataRaw: list,
-      });
-      setTotal(list.length);
-      scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (error) {
-      console.log("error :>> ", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // dont have BE => need to fake data in FE side
-  const getDataByPageAndLimit = (dataRaw = articlesState) => {
-    // sleep 1s to fake loading
-    return new Promise<IArticle[]>((resolve) => {
-      setTimeout(() => {
-        const data = dataRaw.slice(
-          currentPage.current * LIMIT,
-          currentPage.current * LIMIT + LIMIT
-        );
-        resolve(data);
-      }, 500);
-    });
-  };
-
-  // split data to show in FE side for ifinite scroll
-  const onSplitData = async ({
-    isReset,
-    dataRaw,
-  }: {
-    isReset?: boolean;
-    dataRaw?: IArticle[];
-  }) => {
-    const newDataPage = await getDataByPageAndLimit(dataRaw);
-    setIsHasMore(() => newDataPage.length === LIMIT);
-    if (isReset) {
-      setArticles(newDataPage);
-    } else {
-      setArticles((prev) => [...prev, ...newDataPage]);
-    }
-  };
-
-  useEffect(() => {
-    getData();
-  }, [searchValueDebounce]);
-
-  return {
-    articles,
-    loading,
-    setLoading,
-    isHasMore,
-    onGetMore: onSplitData,
-    refeshData: getData,
-    searchValue,
-    setSearchValue,
-    currentPage,
-    total,
-    scrollRef,
-  };
-};
+import { LIMIT_ARTICLE_ITEMS } from "../configs";
 
 export const HomePage = () => {
   const {
@@ -116,7 +26,7 @@ export const HomePage = () => {
     total,
     scrollRef,
     refeshData,
-  } = useGetArticlesHook();
+  } = useArticlesList();
 
   const [articleDelete, setArticleDelete] = useState<IArticle | undefined>(
     undefined
@@ -189,7 +99,7 @@ export const HomePage = () => {
           <div>
             <div className="flex items-center justify-between">
               <code className="mt-4 block text-gray-600">
-                {LIMIT} articles per page
+                {LIMIT_ARTICLE_ITEMS} articles per page
               </code>
               <code className="mt-4 block text-gray-600">
                 1 - {formatNumber(articles.length)} of {formatNumber(total)}
